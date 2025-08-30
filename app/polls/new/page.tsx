@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import PollForm from "@/components/PollForm";
+import { CreatePollForm } from "@/components/polls/CreatePollForm";
 
 export default function NewPollPage() {
   return (
@@ -9,7 +9,7 @@ export default function NewPollPage() {
           <CardTitle>Create a New Poll</CardTitle>
         </CardHeader>
         <CardContent>
-          <PollForm />
+          <CreatePollForm />
         </CardContent>
       </Card>
     </div>
