@@ -1,12 +1,12 @@
 import { redirect } from 'next/navigation'
-import { getSupabaseServer } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 
 export default async function PollsLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const supabase = getSupabaseServer()
+  const supabase = createClient()
   
   const {
     data: { session },

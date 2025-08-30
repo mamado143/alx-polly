@@ -1,0 +1,52 @@
+---
+description: Server Actions patterns for mutations and safe data access.
+globs:
+  - "lib/actions/**"
+  - "app/**"
+autoAttach: ["**/*.tsx", "**/*.ts"]
+---
+
+## Rules
+- Prefer Server Actions over client fetches.
+- Each action validates inputs with zod, checks auth with Supabase server client, and writes to DB.
+- Return structured results `{ ok: true, data } | { ok: false, error }`.
+- Use revalidatePath or revalidateTag after writes when needed.
+
+## Example Skeleton
+```ts
+"use server";
+import { z } from "zod";
+import { createClient } from "@/lib/supabase/server";
+
+const schema = z.object({
+  question: z.string().min(10).max(280),
+  options: z.array(z.string().min(1).max(80)).min(2).max(10),
+  expiresAt: z.union([z.date(), z.null()]).optional(),
+});
+
+export async function createPoll(input: unknown) {
+  const parsed = schema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid input" };
+
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Unauthorized" };
+
+  try {
+    const { data, error } = await supabase
+      .from("polls")
+      .insert({
+        question: parsed.data.question.trim(),
+        options: parsed.data.options.map(o => o.trim()),
+        created_by: user.id,
+        expires_at: parsed.data.expiresAt ?? null,
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return { ok: true, data };
+  } catch (e: any) {
+    return { ok: false, error: e.message ?? "Create failed" };
+  }
+}
+```

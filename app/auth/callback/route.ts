@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { createServerClient, type CookieOptions } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@supabase/ssr'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -18,20 +18,18 @@ export async function GET(request: Request) {
           get(name: string) {
             return cookieStore.get(name)?.value
           },
-          set(name: string, value: string, options: CookieOptions) {
+          set(name: string, value: string, options: any) {
             try {
               cookieStore.set({ name, value, ...options })
             } catch (error) {
-              // The `set` method was called from a Server Component.
               // This can be ignored if you have middleware refreshing
               // user sessions.
             }
           },
-          remove(name: string, options: CookieOptions) {
+          remove(name: string, options: any) {
             try {
               cookieStore.set({ name, value: '', ...options })
             } catch (error) {
-              // The `delete` method was called from a Server Component.
               // This can be ignored if you have middleware refreshing
               // user sessions.
             }

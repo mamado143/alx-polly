@@ -1,0 +1,25 @@
+---
+description: Data modeling and validation rules for Polls & Votes.
+globs:
+  - "lib/**"
+  - "app/**"
+autoAttach: ["**/*poll*", "**/*vote*"]
+---
+
+## Validation
+- Use zod for schemas:
+  - `question`: string().min(10).max(280)
+  - `options`: array(string().min(1).max(80)).min(2).max(10)
+  - `expiresAt`: optional preprocess to Date or null; must be future if present.
+- Normalize trimming and prevent duplicate options (case-insensitive).
+
+## Supabase Tables (reference)
+- `polls(id uuid pk, question text, options text[], created_by uuid, created_at timestamptz default now(), expires_at timestamptz null)`
+- `votes(id uuid pk, poll_id uuid fk, option_index int, voter_id uuid null, created_at timestamptz default now())`
+
+## Indexing
+- Index `polls(created_at desc)`
+- Index `votes(poll_id)`
+
+## Uniqueness
+- No strict uniqueness on `question`. Use `id` for shareable link.

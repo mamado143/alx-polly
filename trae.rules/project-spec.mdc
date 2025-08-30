@@ -1,0 +1,64 @@
+---
+description: Core rules for the Polling App with QR Code Sharing (Next.js + Supabase).
+globs:
+  - "app/**"
+  - "components/**"
+  - "lib/**"
+  - "prisma/**"
+alwaysApply: true
+---
+
+## Project Purpose
+Build a Polling App where users register (Supabase), create polls (question + options[] + expiresAt?), vote, and share via unique URLs + QR codes.
+
+## Technology (do not change unless asked)
+- TypeScript, Next.js App Router (Server Components + Server Actions)
+- Supabase (auth + database)
+- Tailwind + shadcn/ui
+- Forms: react-hook-form + zod
+- QR: local React QR component (e.g., qrcode.react)
+
+## Directory & Co-location Rules
+1) Routes live in `/app`. Use App Router segments with `layout.tsx`, `page.tsx`, `error.tsx`.
+2) Polls:
+   - List: `/app/polls/page.tsx`
+   - New: `/app/polls/new/page.tsx`
+   - Details/Results: `/app/polls/[id]/page.tsx`
+3) Mutations use **Server Actions** colocated with feature (`/lib/actions/*.ts`) or next to the route when appropriate.
+4) **Do not create route handlers for form submissions unless explicitly required.** Avoid client `fetch` to API routes for mutations; prefer Server Actions.
+5) Shared UI goes in `/components/*` (e.g., `components/polls/CreatePollForm.tsx`, `components/shared/QRCodeCard.tsx`).
+6) Supabase helpers in `/lib/supabase/server.ts` (server) and `/lib/supabase/client.ts` (client if needed).
+
+## Data & Validation Rules
+7) Poll model: `{ id, question (10..280), options (2..10, each 1..80), createdBy, createdAt, expiresAt? }`.
+8) Validate all form inputs with **zod**, including trimming and de-duplicating options (case-insensitive).
+9) Votes reference `pollId` and an `optionIndex`. Anonymous vote allowed for now (voterId nullable).
+
+## Forms & UI Rules
+10) Use `react-hook-form` + `@hookform/resolvers/zod` + shadcn `<Form />` primitives.
+11) **Never submit via client `fetch` to API; submit via Server Action.**
+12) Use Tailwind with a `cn()` utility (clsx + tailwind-merge) for class composition.
+
+## Auth & Secrets
+13) Supabase is the sole auth + DB layer. Use the **server** client in Server Components/Actions.
+14) Never hardcode secrets. Load from env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (and service role only on the server when necessary).
+
+## Error Handling & Revalidation
+15) Wrap Server Actions in `try/catch` and return `{ ok: true, data } | { ok: false, error }`.
+16) After mutations, call `revalidatePath` or `revalidateTag` for affected routes.
+
+## What Good Looks Like (Example Targets)
+- **Create Poll**: A page `/app/polls/new/page.tsx` showing a `CreatePollForm` that:
+  - uses `react-hook-form + zod`
+  - posts to `createPoll` **Server Action**
+  - on success, navigates to `/polls/[id]`
+- **Poll Details**: `/app/polls/[id]/page.tsx`:
+  - server data fetch with Supabase server client
+  - renders QR via local component (no external QR HTTP calls)
+
+## Verification Checklist (AI must satisfy)
+- App Router + Server Components are used for data fetching.
+- All mutations are Server Actions (no client fetch to /api).
+- Supabase client is used for all DB/auth interactions.
+- Forms use `react-hook-form + zod + shadcn/ui`.
+- No secrets hardcoded; env variables used.
