@@ -7,17 +7,18 @@ import { QRCodeCard } from "@/components/shared/QRCodeCard";
 import { Calendar, Users, Clock } from "lucide-react";
 
 interface PollPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function PollDetailPage({ params }: PollPageProps) {
-  const supabase = createClient();
+  const { id } = await params;
+  const supabase = await createClient();
   
   // Fetch poll data from Supabase
   const { data: poll, error } = await supabase
     .from("polls")
     .select("id, question, options, created_at, expires_at")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (error || !poll) {
@@ -31,9 +32,9 @@ export default async function PollDetailPage({ params }: PollPageProps) {
   const { count: voteCount } = await supabase
     .from("votes")
     .select("*", { count: "exact", head: true })
-    .eq("poll_id", params.id);
+    .eq("poll_id", id);
 
-  const shareUrl = `${process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000"}/polls/${params.id}`;
+  const shareUrl = `${process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000"}/polls/${id}`;
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
@@ -82,10 +83,10 @@ export default async function PollDetailPage({ params }: PollPageProps) {
                   <p className="text-muted-foreground mb-4">
                     This poll has expired and is no longer accepting votes.
                   </p>
-                  <PollResults pollId={params.id} />
+                  <PollResults pollId={id} />
                 </div>
               ) : (
-                <PollVotingForm pollId={params.id} options={poll.options} />
+                <PollVotingForm pollId={id} options={poll.options} />
               )}
             </CardContent>
           </Card>
@@ -108,7 +109,7 @@ export default async function PollDetailPage({ params }: PollPageProps) {
               <CardTitle>Live Results</CardTitle>
             </CardHeader>
             <CardContent>
-              <PollResults pollId={params.id} />
+              <PollResults pollId={id} />
             </CardContent>
           </Card>
         </div>
