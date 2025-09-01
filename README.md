@@ -55,7 +55,7 @@ A modern, real-time polling application built with Next.js, Supabase, and TypeSc
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone <https://github.com/mamado143/alx-polly.git>
    cd polling-app
    ```
 

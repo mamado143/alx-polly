@@ -4,9 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Plus, Calendar, Users, CheckCircle, Eye, Share2, BarChart3, Edit, Trash2 } from "lucide-react";
 import { SuccessMessage } from "@/components/SuccessMessage";
+import { Poll } from "@/lib/types/poll";
 
 export default async function PollsDashboardPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   // Get current user
   const { data: { user } } = await supabase.auth.getUser();

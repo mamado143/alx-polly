@@ -8,7 +8,7 @@ type SubmitVoteResult =
   | { ok: false; error: string };
 
 export async function submitVote(pollId: string, optionIndex: number): Promise<SubmitVoteResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   try {
     // Check if poll exists and is not expired
@@ -71,7 +71,7 @@ export async function submitVote(pollId: string, optionIndex: number): Promise<S
     revalidatePath(`/polls/${pollId}/results`);
     
     return { ok: true };
-  } catch (e: any) {
-    return { ok: false, error: e.message ?? "Failed to submit vote" };
+  } catch (e: unknown) {
+    return { ok: false, error: (e as Error).message ?? "Failed to submit vote" };
   }
 }

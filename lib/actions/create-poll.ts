@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { CreatePollResult } from "@/lib/types/poll";
 
 const createPollSchema = z.object({
   question: z.string().min(10, "Question must be at least 10 characters").max(280, "Question must be less than 280 characters"),
@@ -18,12 +19,17 @@ const createPollSchema = z.object({
       },
       { message: "Options must be unique (case-insensitive)" }
     ),
-  expiresAt: z.union([z.date(), z.null()]).optional(),
+  expiresAt: z.string().optional().transform((val) => {
+    if (!val) return null;
+    const date = new Date(val);
+    return isNaN(date.getTime()) ? null : date;
+  }),
 });
 
-type CreatePollResult = 
-  | { ok: true; data: { id: string; question: string } }
-  | { ok: false; error: string };
+// Use the type from our centralized types file
+// type CreatePollResult = 
+//   | { ok: true; data: { id: string; question: string } }
+//   | { ok: false; error: string };
 
 export async function createPoll(input: unknown): Promise<CreatePollResult> {
   const parsed = createPollSchema.safeParse(input);
@@ -31,7 +37,7 @@ export async function createPoll(input: unknown): Promise<CreatePollResult> {
     return { ok: false, error: parsed.error.errors[0]?.message || "Invalid input" };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return { ok: false, error: "Unauthorized" };
@@ -62,8 +68,8 @@ export async function createPoll(input: unknown): Promise<CreatePollResult> {
     revalidatePath("/polls");
     
     return { ok: true, data };
-  } catch (e: any) {
-    return { ok: false, error: e.message ?? "Failed to create poll" };
+  } catch (e: unknown) {
+    return { ok: false, error: (e as Error).message ?? "Failed to create poll" };
   }
 }
 

@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { EditPollForm } from "@/components/polls/EditPollForm";
+import { EditablePoll } from "@/lib/types/poll";
 
 interface EditPollPageProps {
   params: Promise<{
@@ -56,6 +57,14 @@ export default async function EditPollPage({ params }: EditPollPageProps) {
     );
   }
 
+  // Transform poll data for editing
+  const editablePoll: EditablePoll = {
+    id: poll.id,
+    question: poll.question,
+    options: poll.options,
+    expires_at: poll.expires_at,
+  };
+
   return (
     <div className="max-w-2xl mx-auto p-6">
       <Card>
@@ -63,7 +72,7 @@ export default async function EditPollPage({ params }: EditPollPageProps) {
           <CardTitle>Edit Poll</CardTitle>
         </CardHeader>
         <CardContent>
-          <EditPollForm poll={poll} />
+          <EditPollForm poll={editablePoll} />
         </CardContent>
       </Card>
     </div>

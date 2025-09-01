@@ -9,7 +9,7 @@ type DeletePollResult =
   | { ok: false; error: string };
 
 export async function deletePoll(pollId: string): Promise<DeletePollResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return { ok: false, error: "Unauthorized" };
@@ -43,8 +43,8 @@ export async function deletePoll(pollId: string): Promise<DeletePollResult> {
     revalidatePath("/polls");
     
     return { ok: true };
-  } catch (e: any) {
-    return { ok: false, error: e.message ?? "Failed to delete poll" };
+  } catch (e: unknown) {
+    return { ok: false, error: (e as Error).message ?? "Failed to delete poll" };
   }
 }
 

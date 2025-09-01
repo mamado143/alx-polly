@@ -18,7 +18,11 @@ const updatePollSchema = z.object({
       },
       { message: "Options must be unique (case-insensitive)" }
     ),
-  expiresAt: z.union([z.date(), z.null()]).optional(),
+  expiresAt: z.string().optional().transform((val) => {
+    if (!val) return null;
+    const date = new Date(val);
+    return isNaN(date.getTime()) ? null : date;
+  }),
 });
 
 type UpdatePollResult = 
@@ -31,7 +35,7 @@ export async function updatePoll(pollId: string, input: unknown): Promise<Update
     return { ok: false, error: parsed.error.errors[0]?.message || "Invalid input" };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return { ok: false, error: "Unauthorized" };
@@ -78,8 +82,8 @@ export async function updatePoll(pollId: string, input: unknown): Promise<Update
     revalidatePath(`/polls/${pollId}`);
     
     return { ok: true, data };
-  } catch (e: any) {
-    return { ok: false, error: e.message ?? "Failed to update poll" };
+  } catch (e: unknown) {
+    return { ok: false, error: (e as Error).message ?? "Failed to update poll" };
   }
 }
 

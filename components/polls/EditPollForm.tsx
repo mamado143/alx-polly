@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { updatePollAndRedirect } from "@/lib/actions/update-poll";
 import { cn } from "@/lib/utils";
 import { Plus, Trash2, Calendar } from "lucide-react";
+import { EditablePoll } from "@/lib/types/poll";
 
 const editPollSchema = z.object({
   question: z.string().min(10, "Question must be at least 10 characters").max(280, "Question must be less than 280 characters"),
@@ -26,25 +27,17 @@ const editPollSchema = z.object({
       },
       { message: "Options must be unique (case-insensitive)" }
     ),
-  expiresAt: z.string().optional().transform((val) => {
-    if (!val) return null;
+  expiresAt: z.string().optional().refine((val) => {
+    if (!val) return true;
     const date = new Date(val);
-    return isNaN(date.getTime()) ? null : date;
-  }).refine((date) => {
-    if (!date) return true;
-    return date > new Date();
+    return !isNaN(date.getTime()) && date > new Date();
   }, { message: "Expiration date must be in the future" }),
 });
 
 type EditPollData = z.infer<typeof editPollSchema>;
 
 interface EditPollFormProps {
-  poll: {
-    id: string;
-    question: string;
-    options: string[];
-    expires_at: string | null;
-  };
+  poll: EditablePoll;
 }
 
 export function EditPollForm({ poll }: EditPollFormProps) {
