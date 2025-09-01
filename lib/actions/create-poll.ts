@@ -66,3 +66,14 @@ export async function createPoll(input: unknown): Promise<CreatePollResult> {
     return { ok: false, error: e.message ?? "Failed to create poll" };
   }
 }
+
+// Server Action that handles redirect after successful creation
+export async function createPollAndRedirect(input: unknown) {
+  const result = await createPoll(input);
+  
+  if (result.ok) {
+    redirect(`/polls?created=true`);
+  }
+  
+  return result;
+}
