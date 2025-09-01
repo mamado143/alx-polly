@@ -3,9 +3,10 @@ import { NextRequest } from "next/server";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const result = await deletePollAndRedirect(params.id);
+  const { id } = await params;
+  const result = await deletePollAndRedirect(id);
   
   if (!result.ok) {
     return new Response(JSON.stringify({ error: result.error }), {
