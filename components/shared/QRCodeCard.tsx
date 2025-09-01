@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import QRCode from "qrcode.react";
+import { QRCodeSVG } from "qrcode.react";
 
 interface QRCodeCardProps {
   url: string;
@@ -13,7 +13,7 @@ export function QRCodeCard({ url, title = "Scan to view poll" }: QRCodeCardProps
     <Card>
       <CardContent className="p-6 flex flex-col items-center gap-4">
         <div className="bg-white p-4 rounded-lg">
-          <QRCode 
+          <QRCodeSVG 
             value={url} 
             size={160}
             level="M"
