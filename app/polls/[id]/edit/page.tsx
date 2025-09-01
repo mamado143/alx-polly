@@ -4,13 +4,14 @@ import { redirect } from "next/navigation";
 import { EditPollForm } from "@/components/polls/EditPollForm";
 
 interface EditPollPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function EditPollPage({ params }: EditPollPageProps) {
-  const supabase = createClient();
+  const { id } = await params;
+  const supabase = await createClient();
   
   // Get current user
   const { data: { user } } = await supabase.auth.getUser();
@@ -23,7 +24,7 @@ export default async function EditPollPage({ params }: EditPollPageProps) {
   const { data: poll, error } = await supabase
     .from("polls")
     .select("id, question, options, expires_at, created_by")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (error || !poll) {
